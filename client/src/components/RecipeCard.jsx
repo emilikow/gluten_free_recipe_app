@@ -12,18 +12,20 @@ const LABELS = {
 }
 
 export default function RecipeCard({ recipe, onEdit, onDelete }) {
+  const mainImage = recipe.images?.[0]
   return (
     <div className="bg-white border rounded-2xl p-4 space-y-2">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-lg">{recipe.title}</h3>
-          <p className="text-sm text-gray-600">by {recipe.owner}</p>
+          <p className="text-sm text-gray-600">shared</p>
         </div>
         <div className="flex gap-2">
           <button onClick={()=>onEdit?.(recipe)} className="text-sm underline">Edit</button>
           <button onClick={()=>onDelete?.(recipe)} className="text-sm text-red-600 underline">Delete</button>
         </div>
       </div>
+      {mainImage && <img src={mainImage} alt="" className="w-full h-48 object-cover rounded-xl border" />}
       <p className="text-gray-800">{recipe.description}</p>
       <div className="flex flex-wrap gap-1">
         {recipe.stickers?.map(s => {
@@ -43,6 +45,13 @@ export default function RecipeCard({ recipe, onEdit, onDelete }) {
           {recipe.steps?.map((s, idx)=> <li key={idx}>{s}</li>)}
         </ol>
       </div>
+      {recipe.images?.length > 1 && (
+        <div className="flex gap-2 mt-2">
+          {recipe.images.slice(1).map((u, idx)=>(
+            <img key={idx} src={u} className="w-16 h-16 object-cover rounded-lg border" />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

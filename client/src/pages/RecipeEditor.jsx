@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { api } from '../api'
 import StickerPicker from '../components/StickerPicker'
+import ImageUploader from '../components/ImageUploader'
 
 export default function RecipeEditor({ recipe, onBack }) {
   const [title, setTitle] = useState(recipe?.title || '')
@@ -8,6 +9,7 @@ export default function RecipeEditor({ recipe, onBack }) {
   const [ingredients, setIngredients] = useState(recipe?.ingredients?.join('\n') || '')
   const [steps, setSteps] = useState(recipe?.steps?.map((s,i)=>`${i+1}. ${s}`).join('\n') || '')
   const [stickers, setStickers] = useState(recipe?.stickers || [])
+  const [images, setImages] = useState(recipe?.images || [])
   const [error, setError] = useState('')
 
   async function submit(e){
@@ -19,7 +21,8 @@ export default function RecipeEditor({ recipe, onBack }) {
         description,
         ingredients: ingredients.split('\n').map(s=>s.trim()).filter(Boolean),
         steps: steps.split('\n').map(s=>s.replace(/^\d+\.\s*/,'').trim()).filter(Boolean),
-        stickers
+        stickers,
+        images
       }
       if (recipe) await api(`/api/recipes/${recipe.id}`, { method:'PUT', body: JSON.stringify(payload)})
       else await api('/api/recipes', { method:'POST', body: JSON.stringify(payload)})
@@ -36,6 +39,10 @@ export default function RecipeEditor({ recipe, onBack }) {
       {error && <div className="text-sm text-red-600">{error}</div>}
       <input className="w-full border rounded-lg px-3 py-2" placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} />
       <textarea className="w-full border rounded-lg px-3 py-2 h-24" placeholder="Description" value={description} onChange={e=>setDescription(e.target.value)} />
+      <div>
+        <label className="font-medium">Images</label>
+        <ImageUploader value={images} onChange={setImages} />
+      </div>
       <div>
         <label className="font-medium">Stickers</label>
         <StickerPicker value={stickers} onChange={setStickers} />
