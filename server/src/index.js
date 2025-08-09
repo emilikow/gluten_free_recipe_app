@@ -84,8 +84,12 @@ app.post("/api/register", (req, res) => {
 
 app.post("/api/login", (req, res) => {
   const { username } = req.body || {};
-  const user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
-  if (!user) return res.status(404).json({ error: "not found" });
+  if (!username) return res.status(400).json({ error: "username required" });
+  let user = db.prepare("SELECT * FROM users WHERE username = ?").get(username);
+  if (!user) {
+    const info = db.prepare("INSERT INTO users (username) VALUES (?)").run(username);
+    user = { id: info.lastInsertRowid, username };
+  }
   return res.json({ id: user.id, username: user.username });
 });
 
@@ -172,21 +176,10 @@ app.get("/api/recipes", requireUser, (req, res) => {
   const stickers = (req.query.stickers || "").split(",").map(s => s.trim()).filter(Boolean);
   const include = (req.query.include || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
   const exclude = (req.query.exclude || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
-  const scope = (req.query.scope || "all"); // all|own|friends
 
-  let userFilterIds = [];
-  if (scope === "own") userFilterIds = [req.user.id];
-  else if (scope === "friends") userFilterIds = getFriendsIds(req.user.id);
-  // "all" => empty means no filter
-
-  // Basic candidate set
-  let candidates = [];
-  if (userFilterIds.length) {
-    const placeholders = userFilterIds.map(()=>"?").join(",");
-    candidates = db.prepare(`SELECT id FROM recipes WHERE user_id IN (${placeholders})`).all(...userFilterIds).map(r=>r.id);
-  } else {
-    candidates = db.prepare("SELECT id FROM recipes").all().map(r=>r.id);
-  }
+  // Everyone sees everyone's recipes for now (family sharing)
+  // Basic candidate set: all recipe IDs
+  let candidates = db.prepare("SELECT id FROM recipes").all().map(r=>r.id);
 
   // Filter by full text q (title/description)
   if (q) {

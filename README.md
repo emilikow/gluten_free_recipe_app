@@ -33,8 +33,8 @@ Client runs on http://localhost:5173
 > The client expects the API at `http://localhost:3001`. You can change this in `client/src/api.js`.
 
 ## Minimal Auth Model
-- Login/register by **username only** (no passwords, for prototype).  
-- The client sends `X-User: <username>` header with each request.
+- **Username-only login** (no passwords). If the username doesn't exist yet, the server creates it.
+- For now, **all recipes are visible to everyone** (good for family sharing).
 
 ## Search
 - Text search matches recipe **title** and **description**.
